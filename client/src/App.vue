@@ -1,6 +1,7 @@
 <script setup>
 import { RouterView } from "vue-router";
-import AppLayout from "./components/AppLayout.vue";
+import AppLayout from "./components/layout/AppLayout.vue";
+import GlobalFeedbackBarrage from "./components/ui/GlobalFeedbackBarrage.vue";
 
 function usesAppLayout(route) {
   return (route.meta?.layout || "app") === "app";
@@ -18,6 +19,8 @@ function getRouteKey(route) {
 <template>
   <RouterView v-slot="{ Component, route }">
     <div class="route-stage">
+      <GlobalFeedbackBarrage :in-app-layout="usesAppLayout(route)" />
+
       <AppLayout v-if="usesAppLayout(route)" class="route-layout">
         <Transition :name="getRouteTransition(route)" mode="out-in">
           <div :key="getRouteKey(route)" class="route-content">

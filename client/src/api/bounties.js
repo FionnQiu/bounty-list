@@ -31,6 +31,13 @@ export function applyToBounty(id, payload) {
   });
 }
 
+export function ensureBountyConversation(id) {
+  return requestData({
+    url: `/api/bounties/${id}/conversation`,
+    method: "POST",
+  });
+}
+
 export function updateBounty(id, payload) {
   return requestData({
     url: `/api/bounties/${id}`,

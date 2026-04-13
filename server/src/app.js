@@ -16,6 +16,10 @@ const uploadsDir = path.resolve(__dirname, "../uploads");
 app.use(cors());
 app.use(express.json({ limit: "8mb" }));
 app.use("/uploads", express.static(uploadsDir));
+app.use("/api", (_, res, next) => {
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  next();
+});
 
 app.get("/api/health", (_, res) => {
   res.json({

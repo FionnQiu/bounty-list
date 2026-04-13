@@ -10,7 +10,7 @@ export const config = {
     port: Number(process.env.DB_PORT || 3306),
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'bounty_list'
+    database: process.env.DB_NAME || 'bounty_list',
+    charset: process.env.DB_CHARSET || 'utf8mb4_unicode_ci',
   }
 };
-

@@ -7,6 +7,7 @@ const pool = mysql.createPool({
   user: config.db.user,
   password: config.db.password,
   database: config.db.database,
+  charset: config.db.charset,
   waitForConnections: true,
   connectionLimit: 10,
   namedPlaceholders: true
@@ -22,4 +23,3 @@ export async function getConnection() {
 }
 
 export default pool;
-

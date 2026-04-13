@@ -26,14 +26,15 @@ function createBusinessError(message, status, payload) {
 }
 
 const FALLBACK_TEXT = {
-  requestFailed: "\u8bf7\u6c42\u5931\u8d25",
-  networkError: "\u65e0\u6cd5\u8fde\u63a5\u670d\u52a1\uff0c\u8bf7\u786e\u8ba4\u524d\u540e\u7aef\u670d\u52a1\u90fd\u5df2\u542f\u52a8\u3002",
-  configError: "\u8bf7\u6c42\u914d\u7f6e\u9519\u8bef",
+  requestFailed: "请求失败",
+  networkError: "无法连接服务，请确认前后端服务都已启动。",
+  configError: "请求配置错误",
 };
 
 const request = axios.create({
   headers: {
-    "Content-Type": "application/json",
+    "Content-Type": "application/json; charset=utf-8",
+    Accept: "application/json; charset=utf-8",
   },
 });
 

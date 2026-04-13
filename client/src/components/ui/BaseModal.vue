@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue";
-import { useEscapeKey } from "../../composables/useEscapeKey.js";
+import { useEscapeKey } from "../../utils/composables/useEscapeKey.js";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },

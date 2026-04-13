@@ -1,6 +1,6 @@
 ﻿<script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { useEscapeKey } from "../../composables/useEscapeKey.js";
+import { useEscapeKey } from "../../utils/composables/useEscapeKey.js";
 
 const props = defineProps({
   modelValue: {
@@ -271,7 +271,7 @@ useEscapeKey(() => {
           @click="emitSelection(option)"
         >
           <span class="app-select__option-label">{{ option.label }}</span>
-          <span v-if="option.value === selectedValue" class="app-select__check" aria-hidden="true">✓</span>
+          <span v-if="option.value === selectedValue" class="app-select__check" aria-hidden="true">?</span>
         </button>
       </div>
     </Transition>
@@ -380,7 +380,7 @@ useEscapeKey(() => {
   min-height: 36px;
   padding: 0 10px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: calc(var(--radius-xs) + 2px);
   background: transparent;
   color: var(--text-secondary);
   display: flex;
@@ -474,3 +474,4 @@ useEscapeKey(() => {
   }
 }
 </style>
+

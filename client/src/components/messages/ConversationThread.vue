@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import LoadingState from "../ui/LoadingState.vue";
 import MoneyTag from "../ui/MoneyTag.vue";
 import StatusTag from "../ui/StatusTag.vue";
@@ -14,8 +14,6 @@ const props = defineProps({
   messageDraft: { type: String, default: "" },
   sending: { type: Boolean, default: false },
   actionPending: { type: Boolean, default: false },
-  actionSuccessMessage: { type: String, default: "" },
-  actionErrorMessage: { type: String, default: "" },
   currentUserId: { type: [Number, String], default: null },
   mobileMode: { type: Boolean, default: false },
 });
@@ -23,11 +21,24 @@ const props = defineProps({
 const emit = defineEmits(["update:messageDraft", "send-message", "apply", "review"]);
 
 function getInitial(value) {
-  return getInitialChar(value, "私");
+  return getInitialChar(value, "对");
 }
 
 function updateDraft(event) {
   emit("update:messageDraft", event.target.value);
+}
+
+function handleComposerKeydown(event) {
+  if (event.isComposing || event.keyCode === 229) {
+    return;
+  }
+
+  if (event.key !== "Enter" || event.shiftKey) {
+    return;
+  }
+
+  event.preventDefault();
+  emit("send-message");
 }
 </script>
 
@@ -63,7 +74,7 @@ function updateDraft(event) {
           :disabled="actionPending || !interaction.canApply"
           @click="emit('apply')"
         >
-          {{ actionPending ? "提交中..." : interaction.canApply ? "申请接取" : "已提交申请" }}
+          {{ actionPending ? "提交中..." : interaction.canApply ? "接取悬赏" : "已提交申请" }}
         </button>
 
         <div v-else class="interaction-actions">
@@ -85,9 +96,6 @@ function updateDraft(event) {
           </button>
         </div>
       </div>
-
-      <p v-if="actionSuccessMessage" class="feedback feedback--success">{{ actionSuccessMessage }}</p>
-      <p v-if="actionErrorMessage" class="feedback feedback--error">{{ actionErrorMessage }}</p>
     </section>
 
     <LoadingState v-if="loadingMessages" text="正在加载消息..." />
@@ -116,9 +124,10 @@ function updateDraft(event) {
     <footer class="messages-thread__composer surface-card">
       <textarea
         :value="messageDraft"
-        rows="4"
+        rows="3"
         placeholder="继续沟通需求、时间安排和交付方式"
         @input="updateDraft"
+        @keydown="handleComposerKeydown"
       />
       <button class="primary-button" :disabled="sending" @click="emit('send-message')">
         {{ sending ? "发送中..." : "发送消息" }}
@@ -139,7 +148,8 @@ function updateDraft(event) {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: var(--space-3);
+  padding: 10px 12px;
+  gap: var(--space-2);
 }
 
 .messages-thread__head h3 {
@@ -154,8 +164,8 @@ function updateDraft(event) {
 }
 
 .messages-thread__interaction {
-  margin-top: var(--space-3);
-  padding: var(--space-3);
+  margin-top: var(--space-2);
+  padding: 10px 12px;
   display: grid;
   gap: var(--space-2);
 }
@@ -164,7 +174,7 @@ function updateDraft(event) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .interaction-copy {
@@ -193,35 +203,33 @@ function updateDraft(event) {
 }
 
 .messages-thread__body {
-  margin-top: var(--space-4);
-  margin-bottom: var(--space-4);
+  margin-top: 10px;
+  margin-bottom: 10px;
   padding-right: var(--space-1);
   flex: 1;
   min-height: 0;
   overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: 10px;
 }
 
 .messages-thread__composer {
   border-radius: var(--radius-md);
-  padding: var(--space-3);
+  padding: 10px 12px;
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: 0;
 }
 
 .messages-thread__composer textarea {
-  height: 140px;
-  min-height: 140px;
-  max-height: 140px;
+  height: 104px;
+  min-height: 104px;
+  max-height: 124px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
-  padding: var(--space-3);
-  padding-right: 132px;
-  padding-bottom: 58px;
+  padding: 10px 112px 56px 12px;
   resize: none;
   color: var(--text-primary);
   background: rgba(16, 25, 40, 0.92);
@@ -233,15 +241,24 @@ function updateDraft(event) {
 
 .messages-thread__composer .primary-button {
   position: absolute;
-  right: calc(var(--space-3) + 10px);
-  bottom: calc(var(--space-3) + 10px);
+  right: 20px;
+  bottom: 18px;
   z-index: 2;
-  min-width: 110px;
+  min-width: 92px;
+  height: 36px;
+}
+
+.message-bubble {
+  padding: 8px 10px;
+}
+
+.message-bubble small {
+  margin-top: 4px;
 }
 
 .messages-thread--mobile {
-  padding: 56px 12px 12px;
-  gap: var(--space-3);
+  padding: 52px 12px 10px;
+  gap: var(--space-2);
 }
 
 .messages-thread--mobile .messages-thread__head {
@@ -279,15 +296,15 @@ function updateDraft(event) {
   }
 
   .messages-thread__composer textarea {
-    height: 148px;
-    min-height: 148px;
-    max-height: 148px;
+    height: 96px;
+    min-height: 96px;
+    max-height: 112px;
   }
 }
 
 @media (max-width: 560px) {
   .messages-thread--mobile {
-    padding: 56px 10px 10px;
+    padding: 48px 10px 8px;
   }
 
   .messages-thread__interaction {
@@ -295,15 +312,14 @@ function updateDraft(event) {
   }
 
   .messages-thread__composer textarea {
-    padding-right: 12px;
-    padding-bottom: 58px;
+    height: 88px;
+    min-height: 88px;
+    max-height: 104px;
   }
 
   .messages-thread__composer .primary-button {
-    left: calc(var(--space-3) + 8px);
-    right: calc(var(--space-3) + 8px);
-    width: auto;
-    min-width: 0;
+    right: 18px;
+    bottom: 16px;
   }
 }
 
@@ -315,3 +331,4 @@ function updateDraft(event) {
   }
 }
 </style>
+

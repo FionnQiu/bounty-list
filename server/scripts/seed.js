@@ -109,6 +109,7 @@ async function main() {
     user: config.db.user,
     password: config.db.password,
     database: config.db.database,
+    charset: config.db.charset,
     multipleStatements: true,
   });
 

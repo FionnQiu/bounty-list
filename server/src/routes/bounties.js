@@ -1,4 +1,4 @@
-﻿import { Router } from "express";
+import { Router } from "express";
 import { getConnection, query } from "../db.js";
 import { requireAuth } from "../middleware/auth.js";
 import { serializeBounty } from "../utils/serializers.js";
@@ -308,6 +308,116 @@ router.get("/:id", requireAuth, async (req, res) => {
       message: "获取悬赏详情失败",
       data: { error: error.message },
     });
+  }
+});
+
+router.post("/:id/conversation", requireAuth, async (req, res) => {
+  const connection = await getConnection();
+
+  try {
+    const bountyId = Number(req.params.id);
+    if (!Number.isInteger(bountyId) || bountyId <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "悬赏参数不合法",
+      });
+    }
+
+    await connection.beginTransaction();
+
+    const [bountyRows] = await connection.execute(
+      `SELECT id, publisher_id, title, status
+       FROM bounties
+       WHERE id = ?
+       LIMIT 1
+       FOR UPDATE`,
+      [bountyId],
+    );
+
+    if (bountyRows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({
+        success: false,
+        message: "悬赏不存在",
+      });
+    }
+
+    const bounty = bountyRows[0];
+    const bountyStatus = normalizeStoredStatus(bounty.status);
+
+    if (bounty.publisher_id === req.user.id) {
+      await connection.rollback();
+      return res.status(400).json({
+        success: false,
+        message: "不能和自己发布的悬赏创建会话",
+      });
+    }
+
+    if (bountyStatus !== BOUNTY_STATUS.RECRUITING) {
+      await connection.rollback();
+      return res.status(400).json({
+        success: false,
+        message: "当前悬赏不在招募中，无法进入对话",
+      });
+    }
+
+    const [conversationRows] = await connection.execute(
+      `SELECT id
+       FROM conversations
+       WHERE bounty_id = ? AND publisher_id = ? AND applicant_id = ?
+       LIMIT 1`,
+      [bountyId, bounty.publisher_id, req.user.id],
+    );
+
+    let conversationId = conversationRows[0]?.id || null;
+
+    if (!conversationId) {
+      const [insertResult] = await connection.execute(
+        `INSERT IGNORE INTO conversations (bounty_id, publisher_id, applicant_id)
+         VALUES (?, ?, ?)`,
+        [bountyId, bounty.publisher_id, req.user.id],
+      );
+
+      if (insertResult.insertId) {
+        conversationId = insertResult.insertId;
+      } else {
+        const [latestRows] = await connection.execute(
+          `SELECT id
+           FROM conversations
+           WHERE bounty_id = ? AND publisher_id = ? AND applicant_id = ?
+           LIMIT 1`,
+          [bountyId, bounty.publisher_id, req.user.id],
+        );
+        conversationId = latestRows[0]?.id || null;
+      }
+    }
+
+    if (!conversationId) {
+      throw new Error("会话创建失败");
+    }
+
+    await connection.commit();
+
+    return res.json({
+      success: true,
+      message: "进入对话成功",
+      data: {
+        conversation: {
+          id: conversationId,
+          bountyId,
+          bountyTitle: bounty.title,
+        },
+      },
+    });
+  } catch (error) {
+    await connection.rollback();
+    return res.status(500).json({
+      success: false,
+      message: "进入对话失败",
+      data: { error: error.message },
+    });
+  } finally {
+    connection.release();
   }
 });
 
@@ -940,3 +1050,4 @@ router.post("/:id/applications/:applicationId/review", requireAuth, async (req, 
 });
 
 export default router;
+
