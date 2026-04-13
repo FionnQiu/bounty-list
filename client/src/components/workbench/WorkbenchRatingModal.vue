@@ -1,5 +1,6 @@
 ﻿<script setup>
 import { reactive, watch } from "vue";
+import AppSelect from "../ui/AppSelect.vue";
 import BaseModal from "../ui/BaseModal.vue";
 import MoneyTag from "../ui/MoneyTag.vue";
 import StatusTag from "../ui/StatusTag.vue";
@@ -14,15 +15,23 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue", "submit"]);
 
 const form = reactive({
-  score: 5,
+  score: "5",
   comment: "",
 });
+
+const scoreOptions = [
+  { value: "5", label: "5 分（非常满意）" },
+  { value: "4", label: "4 分（满意）" },
+  { value: "3", label: "3 分（一般）" },
+  { value: "2", label: "2 分（不太满意）" },
+  { value: "1", label: "1 分（较差）" },
+];
 
 watch(
   () => [props.modelValue, props.target?.bounty?.id, props.target?.role],
   ([visible]) => {
     if (visible) {
-      form.score = 5;
+      form.score = "5";
       form.comment = "";
     }
   },
@@ -41,7 +50,7 @@ function submitRating() {
   emit("submit", {
     bountyId: props.target.bounty.id,
     targetUserId: props.target.targetUser.id,
-    score: form.score,
+    score: Number(form.score),
     comment: form.comment,
   });
 }
@@ -70,9 +79,12 @@ function submitRating() {
       <form class="rating-modal__form" @submit.prevent="submitRating">
         <label>
           <span>评分</span>
-          <select v-model.number="form.score" class="form-input" required>
-            <option v-for="score in [5, 4, 3, 2, 1]" :key="score" :value="score">{{ score }} 分</option>
-          </select>
+          <AppSelect
+            v-model="form.score"
+            class="rating-modal__score-select"
+            :options="scoreOptions"
+            placeholder="请选择评分"
+          />
         </label>
 
         <label>
@@ -142,6 +154,10 @@ function submitRating() {
   font-weight: 600;
 }
 
+.rating-modal__score-select {
+  width: 100%;
+}
+
 .rating-modal__hint {
   margin: 0;
   color: var(--text-muted);
@@ -161,12 +177,13 @@ function submitRating() {
   }
 
   .rating-modal__actions {
-    justify-content: stretch;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .rating-modal__actions .btn,
   .rating-modal__actions .primary-button {
-    flex: 1;
+    width: 100%;
   }
 }
 </style>

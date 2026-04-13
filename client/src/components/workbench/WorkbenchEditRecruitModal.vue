@@ -180,6 +180,13 @@ function closeRecruit() {
 
   .edit-modal__actions {
     justify-content: flex-start;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .edit-modal__actions .btn,
+  .edit-modal__actions .primary-button {
+    width: 100%;
   }
 }
 </style>

@@ -25,6 +25,12 @@ function createBusinessError(message, status, payload) {
   return error;
 }
 
+const FALLBACK_TEXT = {
+  requestFailed: "\u8bf7\u6c42\u5931\u8d25",
+  networkError: "\u65e0\u6cd5\u8fde\u63a5\u670d\u52a1\uff0c\u8bf7\u786e\u8ba4\u524d\u540e\u7aef\u670d\u52a1\u90fd\u5df2\u542f\u52a8\u3002",
+  configError: "\u8bf7\u6c42\u914d\u7f6e\u9519\u8bef",
+};
+
 const request = axios.create({
   headers: {
     "Content-Type": "application/json",
@@ -53,7 +59,7 @@ request.interceptors.response.use(
       const payload = error.response.data || {};
       return Promise.reject(
         createRequestError(
-          payload.message || "请求失败",
+          payload.message || FALLBACK_TEXT.requestFailed,
           error.response.status,
           payload,
           error,
@@ -64,7 +70,7 @@ request.interceptors.response.use(
     if (error.request) {
       return Promise.reject(
         createRequestError(
-          "无法连接服务，请确认前后端服务都已启动。",
+          FALLBACK_TEXT.networkError,
           null,
           null,
           error,
@@ -72,7 +78,9 @@ request.interceptors.response.use(
       );
     }
 
-    return Promise.reject(createRequestError(error.message || "请求配置错误", null, null, error));
+    return Promise.reject(
+      createRequestError(error.message || FALLBACK_TEXT.configError, null, null, error),
+    );
   },
 );
 
@@ -81,7 +89,7 @@ export async function requestData(config) {
   const result = response.data || {};
 
   if (result.success === false) {
-    throw createBusinessError(result.message || "请求失败", response.status, result);
+    throw createBusinessError(result.message || FALLBACK_TEXT.requestFailed, response.status, result);
   }
 
   return result.data;

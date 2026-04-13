@@ -5,6 +5,7 @@ import { serializeBounty } from "../utils/serializers.js";
 import { BOUNTY_STATUS } from "../utils/statusMachine.js";
 
 const router = Router();
+let bountyStatusSchemaReady = false;
 
 function normalizeText(value) {
   return String(value || "").trim();
@@ -45,6 +46,62 @@ function serializeWorkbenchApplication(row) {
 
 function isMissingTableError(error) {
   return error?.code === "ER_NO_SUCH_TABLE" || Number(error?.errno) === 1146;
+}
+
+function isMissingColumnError(error) {
+  return error?.code === "ER_BAD_FIELD_ERROR" || Number(error?.errno) === 1054;
+}
+
+function isStatusEnumError(error) {
+  return (
+    error?.code === "ER_TRUNCATED_WRONG_VALUE_FOR_FIELD" ||
+    error?.code === "WARN_DATA_TRUNCATED" ||
+    Number(error?.errno) === 1366 ||
+    Number(error?.errno) === 1265
+  );
+}
+
+async function ensureBountyStatusSchema(connection) {
+  if (bountyStatusSchemaReady) {
+    return;
+  }
+
+  const [rows] = await connection.execute(
+    `SELECT COLUMN_TYPE AS column_type
+     FROM information_schema.columns
+     WHERE table_schema = DATABASE()
+       AND table_name = 'bounties'
+       AND column_name = 'status'
+     LIMIT 1`,
+  );
+
+  const columnType = String(rows?.[0]?.column_type || "").toLowerCase();
+  const requiredValues = ["'recruiting'", "'in_progress'", "'pending_confirm'", "'completed'", "'closed'"];
+  const alreadyReady = requiredValues.every((value) => columnType.includes(value));
+  if (alreadyReady) {
+    bountyStatusSchemaReady = true;
+    return;
+  }
+
+  await connection.execute(
+    `ALTER TABLE bounties
+     MODIFY COLUMN status ENUM('open','draft','recruiting','in_progress','pending_confirm','completed','closed')
+     NOT NULL DEFAULT 'recruiting'`,
+  );
+  await connection.execute(
+    `UPDATE bounties
+     SET status = CASE
+       WHEN status IN ('open', 'draft') THEN 'recruiting'
+       ELSE status
+     END
+     WHERE status IN ('open', 'draft')`,
+  );
+  await connection.execute(
+    `ALTER TABLE bounties
+     MODIFY COLUMN status ENUM('recruiting','in_progress','pending_confirm','completed','closed')
+     NOT NULL DEFAULT 'recruiting'`,
+  );
+  bountyStatusSchemaReady = true;
 }
 
 async function getBountySummaryById(id) {
@@ -96,7 +153,40 @@ async function insertStatusLogSafely(connection, payload) {
     if (isMissingTableError(error)) {
       return;
     }
-    throw error;
+
+    if (!isMissingColumnError(error)) {
+      throw error;
+    }
+
+    try {
+      await connection.execute(
+        `INSERT INTO bounty_status_logs (bounty_id, from_status, to_status, actor_id, note)
+         VALUES (?, ?, ?, ?, ?)`,
+        [payload.bountyId, payload.fromStatus, payload.toStatus, payload.actorId, payload.note || null],
+      );
+      return;
+    } catch (fallbackError) {
+      if (isMissingTableError(fallbackError)) {
+        return;
+      }
+      if (!isMissingColumnError(fallbackError)) {
+        throw fallbackError;
+      }
+    }
+
+    try {
+      await connection.execute(
+        `INSERT INTO bounty_status_logs (bounty_id, from_status, to_status, actor_id)
+         VALUES (?, ?, ?, ?)`,
+        [payload.bountyId, payload.fromStatus, payload.toStatus, payload.actorId],
+      );
+      return;
+    } catch (finalFallbackError) {
+      if (isMissingTableError(finalFallbackError) || isMissingColumnError(finalFallbackError)) {
+        return;
+      }
+      throw finalFallbackError;
+    }
   }
 }
 
@@ -636,6 +726,8 @@ router.post("/published/:id/close", requireAuth, async (req, res) => {
   const connection = await getConnection();
 
   try {
+    await ensureBountyStatusSchema(connection);
+
     const bountyId = toInteger(req.params.id);
     if (!Number.isInteger(bountyId) || bountyId <= 0) {
       return res.status(400).json({
@@ -709,7 +801,14 @@ router.post("/published/:id/close", requireAuth, async (req, res) => {
       },
     });
   } catch (error) {
-    await connection.rollback();
+    if (isStatusEnumError(error)) {
+      bountyStatusSchemaReady = false;
+    }
+    try {
+      await connection.rollback();
+    } catch {
+      // ignore rollback errors when no active transaction
+    }
     return res.status(500).json({
       success: false,
       message: "关闭招募失败",
@@ -761,11 +860,11 @@ router.delete("/published/:id", requireAuth, async (req, res) => {
     }
 
     const currentStatus = normalizeStoredStatus(bounty.status);
-    if (![BOUNTY_STATUS.COMPLETED, BOUNTY_STATUS.CLOSED].includes(currentStatus)) {
+    if (currentStatus !== BOUNTY_STATUS.CLOSED) {
       await connection.rollback();
       return res.status(400).json({
         success: false,
-        message: "仅已关闭或已完成的招募可删除",
+        message: "仅已关闭的招募可删除",
       });
     }
 

@@ -26,6 +26,47 @@ function normalizeText(value) {
   return String(value || '').trim();
 }
 
+async function hasTable(tableName) {
+  const rows = await query(
+    `SELECT COUNT(*) AS total
+     FROM information_schema.tables
+     WHERE table_schema = DATABASE()
+       AND table_name = :tableName
+     LIMIT 1`,
+    { tableName }
+  );
+
+  return Number(rows[0]?.total || 0) > 0;
+}
+
+function serializeRatingItem(row) {
+  return {
+    id: row.id,
+    score: Number(row.score || 0),
+    comment: row.comment || '',
+    createdAt: row.created_at,
+    bounty: serializeBounty({
+      id: row.bounty_id,
+      title: row.bounty_title,
+      description: '',
+      reward_amount: row.bounty_reward_amount,
+      status: row.bounty_status,
+      created_at: row.bounty_created_at,
+      updated_at: row.bounty_updated_at,
+      category_id: row.category_id,
+      category_name: row.category_name,
+      publisher_id: row.publisher_id,
+      publisher_username: row.publisher_username,
+      publisher_avatar_url: row.publisher_avatar_url
+    }),
+    counterpartUser: {
+      id: row.counterpart_id,
+      username: row.counterpart_username,
+      avatarUrl: row.counterpart_avatar_url
+    }
+  };
+}
+
 function parseAvatarDataUrl(dataUrl) {
   if (!dataUrl) {
     return null;
@@ -144,6 +185,127 @@ router.get('/me', requireAuth, async (req, res) => {
     return res.status(500).json({
       success: false,
       message: '获取个人中心失败',
+      data: { error: error.message }
+    });
+  }
+});
+
+router.get('/me/ratings', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const ratingsTableReady = await hasTable('bounty_ratings');
+
+    if (!ratingsTableReady) {
+      return res.json({
+        success: true,
+        message: '获取评价面板成功',
+        data: {
+          sentRatings: [],
+          receivedRatings: [],
+          summary: {
+            sentCount: 0,
+            receivedCount: 0,
+            receivedAverageScore: 0
+          }
+        }
+      });
+    }
+
+    const sentRows = await query(
+      `SELECT r.id,
+              r.score,
+              r.comment,
+              r.created_at,
+              b.id AS bounty_id,
+              b.title AS bounty_title,
+              b.reward_amount AS bounty_reward_amount,
+              b.status AS bounty_status,
+              b.created_at AS bounty_created_at,
+              b.updated_at AS bounty_updated_at,
+              b.publisher_id,
+              c.id AS category_id,
+              c.name AS category_name,
+              p.username AS publisher_username,
+              p.avatar_url AS publisher_avatar_url,
+              target.id AS counterpart_id,
+              target.username AS counterpart_username,
+              target.avatar_url AS counterpart_avatar_url
+       FROM bounty_ratings r
+       JOIN bounties b ON b.id = r.bounty_id
+       JOIN bounty_categories c ON c.id = b.category_id
+       JOIN users p ON p.id = b.publisher_id
+       JOIN users target ON target.id = r.target_user_id
+       WHERE r.rater_id = :userId
+       ORDER BY r.created_at DESC, r.id DESC
+       LIMIT 200`,
+      { userId }
+    );
+
+    const receivedRows = await query(
+      `SELECT r.id,
+              r.score,
+              r.comment,
+              r.created_at,
+              b.id AS bounty_id,
+              b.title AS bounty_title,
+              b.reward_amount AS bounty_reward_amount,
+              b.status AS bounty_status,
+              b.created_at AS bounty_created_at,
+              b.updated_at AS bounty_updated_at,
+              b.publisher_id,
+              c.id AS category_id,
+              c.name AS category_name,
+              p.username AS publisher_username,
+              p.avatar_url AS publisher_avatar_url,
+              rater.id AS counterpart_id,
+              rater.username AS counterpart_username,
+              rater.avatar_url AS counterpart_avatar_url
+       FROM bounty_ratings r
+       JOIN bounties b ON b.id = r.bounty_id
+       JOIN bounty_categories c ON c.id = b.category_id
+       JOIN users p ON p.id = b.publisher_id
+       JOIN users rater ON rater.id = r.rater_id
+       WHERE r.target_user_id = :userId
+       ORDER BY r.created_at DESC, r.id DESC
+       LIMIT 200`,
+      { userId }
+    );
+
+    const sentCountRows = await query(
+      `SELECT COUNT(*) AS total
+       FROM bounty_ratings
+       WHERE rater_id = :userId`,
+      { userId }
+    );
+
+    const receivedSummaryRows = await query(
+      `SELECT COUNT(*) AS total, AVG(score) AS avg_score
+       FROM bounty_ratings
+       WHERE target_user_id = :userId`,
+      { userId }
+    );
+
+    const receivedAverageScore = Number(receivedSummaryRows[0]?.avg_score || 0);
+
+    return res.json({
+      success: true,
+      message: '获取评价面板成功',
+      data: {
+        sentRatings: sentRows.map(serializeRatingItem),
+        receivedRatings: receivedRows.map(serializeRatingItem),
+        summary: {
+          sentCount: Number(sentCountRows[0]?.total || 0),
+          receivedCount: Number(receivedSummaryRows[0]?.total || 0),
+          receivedAverageScore: Number.isFinite(receivedAverageScore)
+            ? Number(receivedAverageScore.toFixed(1))
+            : 0
+        }
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: '获取评价面板失败',
       data: { error: error.message }
     });
   }

@@ -1483,25 +1483,58 @@ select.form-input:focus {
 }
 
 @media (max-width: 768px) {
-  .top-dock {
-    grid-template-columns: 1fr auto;
+  :root {
+    --page-padding: 14px;
   }
 
-  .top-dock__nav {
-    justify-content: flex-end;
-    gap: 6px;
+  .top-dock {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 8px;
+    border-radius: 16px;
   }
 
   .top-dock__brand {
-    min-width: 0;
+    display: none;
   }
 
-  .top-dock__brand-mark {
-    font-size: 1.08rem;
+  .top-dock__nav {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    padding-bottom: 0;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .top-dock__nav::-webkit-scrollbar {
+    display: none;
   }
 
   .top-dock__user {
     display: none;
+  }
+
+  .dock-link {
+    min-width: 92px;
+    height: 44px;
+    padding: 0 10px;
+    flex-shrink: 0;
+    border-radius: 14px;
+  }
+
+  .dock-link strong {
+    font-size: 13px;
+  }
+
+  .top-dock,
+  .app-stage {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
   }
 
   .workspace--messages {
@@ -1524,11 +1557,42 @@ select.form-input:focus {
   }
 
   .message-bubble {
-    max-width: 86%;
+    max-width: 92%;
   }
 
   .detail-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  :root {
+    --top-dock-height: 64px;
+    --page-padding: 12px;
+  }
+
+  .top-dock-wrap {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .top-dock {
+    padding: 6px;
+    border-radius: 14px;
+  }
+
+  .dock-link {
+    min-width: 82px;
+    height: 44px;
+    padding: 0 8px;
+  }
+
+  .dock-link strong {
+    font-size: 12px;
+  }
+
+  .workspace {
+    gap: var(--space-4);
   }
 }
 

@@ -7,6 +7,7 @@ const props = defineProps({
   title: { type: String, default: "" },
   ariaLabel: { type: String, default: "Dialog" },
   width: { type: String, default: "min(760px, 100%)" },
+  fullScreenOnMobile: { type: Boolean, default: false },
   closeOnMask: { type: Boolean, default: true },
   closeOnEsc: { type: Boolean, default: true },
   showClose: { type: Boolean, default: true },
@@ -39,8 +40,19 @@ useEscapeKey(() => {
 <template>
   <Teleport to="body">
     <Transition name="base-modal" appear>
-      <div v-if="modelValue" class="base-modal-mask" @click.self="onMaskClick">
-        <section class="base-modal" role="dialog" :aria-label="ariaLabel" aria-modal="true" :style="modalStyle" @click.stop>
+      <div
+        v-if="modelValue"
+        :class="['base-modal-mask', { 'base-modal-mask--mobile-full': fullScreenOnMobile }]"
+        @click.self="onMaskClick"
+      >
+        <section
+          :class="['base-modal', { 'base-modal--mobile-full': fullScreenOnMobile }]"
+          role="dialog"
+          :aria-label="ariaLabel"
+          aria-modal="true"
+          :style="modalStyle"
+          @click.stop
+        >
           <button
             v-if="showClose"
             class="base-modal__close"
@@ -167,8 +179,74 @@ useEscapeKey(() => {
 }
 
 @media (max-width: 768px) {
+  .base-modal-mask {
+    padding: var(--space-4);
+  }
+
+  .base-modal-mask--mobile-full {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
   .base-modal {
     padding: var(--space-5) var(--space-4);
+  }
+
+  .base-modal--mobile-full {
+    width: 100vw !important;
+    max-height: 100dvh;
+    height: 100dvh;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    padding: 0;
+  }
+
+  .base-modal--mobile-full .base-modal__close {
+    top: 12px;
+    right: 12px;
+    z-index: 4;
+  }
+
+  .base-modal--mobile-full .base-modal__body {
+    height: 100%;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .base-modal-mask {
+    padding: var(--space-3);
+  }
+
+  .base-modal-mask--mobile-full {
+    padding: 0;
+  }
+
+  .base-modal {
+    max-height: 92dvh;
+    border-radius: var(--radius-md);
+    padding: 16px 14px;
+  }
+
+  .base-modal--mobile-full {
+    max-height: 100dvh;
+    height: 100dvh;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .base-modal__close {
+    width: 36px;
+    height: 36px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .base-modal__header {
+    padding-right: 42px;
   }
 }
 

@@ -10,16 +10,16 @@ const router = useRouter();
 const user = computed(() => authStore.state.user);
 
 const dockLinks = [
-  { to: "/bounties", label: "广场" },
+  { to: "/bounties", label: "悬赏广场" },
   { to: "/workbench", label: "工作台" },
-  { to: "/messages", label: "私信" },
-  { to: "/profile", label: "我的" },
+  { to: "/messages", label: "对话" },
+  { to: "/profile", label: "个人中心" },
 ];
 
 const currentLabel = computed(() => {
   if (route.path.startsWith("/bounties/")) return "悬赏详情";
   if (route.path.startsWith("/workbench")) return "工作台";
-  if (route.path.startsWith("/messages")) return "私信";
+  if (route.path.startsWith("/messages")) return "对话";
   if (route.path.startsWith("/profile")) return "个人中心";
   return "悬赏广场";
 });

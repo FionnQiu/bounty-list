@@ -10,40 +10,14 @@ const props = defineProps({
   bounty: { type: Object, default: null },
   loading: { type: Boolean, default: false },
   applications: { type: Array, default: () => [] },
-  reviewingKey: { type: String, default: "" },
 });
 
-const emit = defineEmits(["update:modelValue", "review", "open-chat"]);
+const emit = defineEmits(["update:modelValue", "open-chat"]);
 
 function closeModal() {
   emit("update:modelValue", false);
 }
 
-function triggerReview(application, decision) {
-  emit("review", { application, decision });
-}
-
-function isReviewing(applicationId) {
-  return props.reviewingKey === `${props.bounty?.id || 0}:${applicationId}`;
-}
-
-function canAcceptCurrentBounty() {
-  const status = String(props.bounty?.status || "");
-  if (status === "recruiting" || status === "open") {
-    return true;
-  }
-
-  if (status === "in_progress" && !props.bounty?.acceptedApplicant?.id) {
-    // 兼容历史脏数据：已进入进行中但尚未落接取者时，允许执行一次同意。
-    return true;
-  }
-
-  return false;
-}
-
-function canAcceptApplication(item) {
-  return (item.status === "pending" || item.status === "contacting") && canAcceptCurrentBounty();
-}
 </script>
 
 <template>
@@ -88,32 +62,12 @@ function canAcceptApplication(item) {
 
           <footer class="apps-item__actions">
             <button
-              v-if="canAcceptApplication(item)"
-              class="btn btn-primary"
-              type="button"
-              :disabled="isReviewing(item.id)"
-              @click="triggerReview(item, 'accepted')"
-            >
-              {{ isReviewing(item.id) ? "处理中..." : "同意接取" }}
-            </button>
-
-            <button
-              v-if="item.status === 'pending' || item.status === 'contacting'"
-              class="btn btn-outline"
-              type="button"
-              :disabled="isReviewing(item.id)"
-              @click="triggerReview(item, 'rejected')"
-            >
-              拒绝
-            </button>
-
-            <button
               v-if="item.conversationId"
               class="btn btn-secondary"
               type="button"
               @click="emit('open-chat', item.conversationId)"
             >
-              进入私信
+              进入对话
             </button>
           </footer>
         </article>
@@ -217,5 +171,34 @@ function canAcceptApplication(item) {
 .apps-modal__footer {
   display: flex;
   justify-content: flex-end;
+}
+
+@media (max-width: 560px) {
+  .apps-modal__list {
+    max-height: min(50dvh, 420px);
+  }
+
+  .apps-item__head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .apps-item__actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .apps-item__actions .btn,
+  .apps-item__actions .primary-button {
+    width: 100%;
+  }
+
+  .apps-modal__footer {
+    justify-content: stretch;
+  }
+
+  .apps-modal__footer .btn {
+    width: 100%;
+  }
 }
 </style>

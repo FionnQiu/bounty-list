@@ -14,6 +14,13 @@ export function getMyProfile() {
   });
 }
 
+export function getMyRatings() {
+  return requestData({
+    url: "/api/users/me/ratings",
+    method: "GET",
+  });
+}
+
 export function updateMyProfile(payload) {
   return requestData({
     url: "/api/users/me",

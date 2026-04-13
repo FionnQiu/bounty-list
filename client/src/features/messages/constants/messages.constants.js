@@ -1,0 +1,1 @@
+﻿export const MESSAGES_MOBILE_BREAKPOINT = 768;

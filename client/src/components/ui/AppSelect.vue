@@ -449,6 +449,22 @@ useEscapeKey(() => {
   transform: translateY(-6px);
 }
 
+@media (max-width: 768px) {
+  .app-select__control {
+    min-height: 44px;
+    padding: 0 12px;
+  }
+
+  .app-select__menu {
+    max-height: min(46vh, 320px);
+  }
+
+  .app-select__option {
+    min-height: 42px;
+    padding: 0 12px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .app-select__control,
   .app-select__option,
