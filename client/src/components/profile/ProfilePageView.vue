@@ -590,35 +590,35 @@ export default {
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .rating-item {
   border: 1px solid var(--line-soft);
   border-radius: calc(var(--radius-sm) + 2px);
   background: rgba(15, 26, 44, 0.68);
-  padding: 14px;
+  padding: 10px 12px;
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .rating-item__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
 }
 
 .rating-item__identity {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
 .rating-item__avatar {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   border-radius: var(--radius-sm);
   object-fit: cover;
 }
@@ -640,13 +640,15 @@ export default {
 .rating-item__role,
 .rating-item__time {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
+  line-height: 1.2;
 }
 
 .rating-item__name {
-  margin: 4px 0 0;
+  margin: 2px 0 0;
   color: var(--text-primary);
+  font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -655,20 +657,25 @@ export default {
 .rating-item__score {
   display: grid;
   justify-items: end;
-  gap: 2px;
+  gap: 0;
   color: #ffd972;
   font-variant-numeric: tabular-nums;
+  font-size: 13px;
 }
 
 .rating-item__comment {
   margin: 0;
   color: var(--text-secondary);
-  line-height: 1.55;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .rating-item__bounty {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .rating-item__bounty-title {
@@ -682,19 +689,19 @@ export default {
 .rating-item__tags {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .rating-category {
   display: inline-flex;
   align-items: center;
-  min-height: 24px;
-  padding: 0 10px;
+  min-height: 22px;
+  padding: 0 8px;
   border-radius: 999px;
   border: 1px solid rgba(134, 162, 214, 0.45);
   background: rgba(21, 36, 60, 0.72);
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
 }
 

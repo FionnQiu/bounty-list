@@ -270,6 +270,7 @@ export default {
   flex: none;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-auto-rows: 180px;
   gap: var(--space-3);
   align-content: start;
   align-items: start;
@@ -288,7 +289,8 @@ export default {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  min-height: 0;
+  height: 100%;
+  min-height: 180px;
   align-self: start;
   cursor: pointer;
   backdrop-filter: blur(12px);
@@ -326,6 +328,9 @@ export default {
   margin: 0;
   font-size: 1.18rem;
   line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .summary {
@@ -333,10 +338,9 @@ export default {
   color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.55;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-category {
@@ -519,10 +523,12 @@ export default {
 @media (max-width: 560px) {
   .bounties-list {
     grid-template-columns: 1fr;
+    grid-auto-rows: 180px;
   }
 
   .bounty-card {
     padding: 12px;
+    min-height: 180px;
   }
 
   .card-head {
