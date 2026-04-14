@@ -270,7 +270,7 @@ export default {
   flex: none;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  grid-auto-rows: 180px;
+  grid-auto-rows: 170px;
   gap: var(--space-3);
   align-content: start;
   align-items: start;
@@ -290,7 +290,7 @@ export default {
   flex-direction: column;
   gap: var(--space-2);
   height: 100%;
-  min-height: 180px;
+  min-height: 170px;
   align-self: start;
   cursor: pointer;
   backdrop-filter: blur(12px);
@@ -523,12 +523,12 @@ export default {
 @media (max-width: 560px) {
   .bounties-list {
     grid-template-columns: 1fr;
-    grid-auto-rows: 180px;
+    grid-auto-rows: 170px;
   }
 
   .bounty-card {
     padding: 12px;
-    min-height: 180px;
+    min-height: 170px;
   }
 
   .card-head {
@@ -541,9 +541,9 @@ export default {
   }
 
   .publisher-line {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 6px;
+    align-items: center;
+    flex-direction: row;
+    gap: var(--space-2);
   }
 
   .filter-actions {
