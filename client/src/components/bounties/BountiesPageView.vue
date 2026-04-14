@@ -196,10 +196,13 @@ export default {
 .bounties-page {
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - var(--top-dock-height) - var(--page-padding) - var(--page-padding));
+  height: 100%;
   min-height: 0;
+  padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
   overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -322,6 +325,9 @@ export default {
   width: 100%;
   min-width: 0;
   justify-content: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .title {
@@ -490,9 +496,41 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .bounties-page {
-    height: auto;
-    min-height: calc(100dvh - var(--top-dock-height) - var(--page-padding) - var(--page-padding));
+  .filter-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filter-fields > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .page-header {
+    gap: var(--space-1);
+  }
+
+  .page-header h1 {
+    font-size: clamp(1.5rem, 8vw, 1.9rem);
+  }
+
+  .filters {
+    padding: var(--space-3);
+    margin-bottom: var(--space-5);
+  }
+
+  .filter-toolbar {
+    gap: var(--space-3);
+  }
+
+  .bounties-list {
+    gap: var(--space-2);
+  }
+
+  .title {
+    font-size: 1.08rem;
+  }
+
+  .summary {
+    font-size: 13px;
   }
 
   .create-grid,
@@ -502,10 +540,15 @@ export default {
 
   .modal-header {
     flex-direction: column;
+    gap: var(--space-3);
   }
 
   .modal-header :deep(.money-tag--lg) {
     margin-right: 0;
+  }
+
+  .modal-main h2 {
+    font-size: 1.34rem;
   }
 
   .filter-actions {
@@ -523,15 +566,19 @@ export default {
 @media (max-width: 560px) {
   .bounties-list {
     grid-template-columns: 1fr;
-    grid-auto-rows: 170px;
+    grid-auto-rows: auto;
   }
 
   .bounty-card {
     padding: 12px;
-    min-height: 170px;
+    height: auto;
+    min-height: 180px;
   }
 
   .card-head {
+    --glass-tag-height: 24px;
+    --glass-tag-padding: 0 8px;
+    --glass-tag-font-size: 11.5px;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
   }
@@ -540,29 +587,75 @@ export default {
     max-width: 100%;
   }
 
+  .title {
+    white-space: normal;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+  }
+
+  .summary {
+    white-space: normal;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    min-height: calc(1.55em * 2);
+  }
+
   .publisher-line {
-    align-items: center;
+    align-items: flex-start;
     flex-direction: row;
+    flex-wrap: wrap;
     gap: var(--space-2);
   }
 
   .filter-actions {
-    flex-direction: column;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
   }
 
   .filter-actions .btn,
   .filter-actions .primary-button {
     width: 100%;
-    flex: none;
+    min-height: 44px;
+    flex: 1 1 auto;
   }
 
   .modal-actions {
     align-items: stretch;
   }
 
+  .modal-grid {
+    padding: var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .modal-description p {
+    font-size: 14px;
+    line-height: 1.65;
+    word-break: break-word;
+  }
+
   .modal-actions .primary-button {
     width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 380px) {
+  .card-head {
+    --glass-tag-height: 22px;
+    --glass-tag-padding: 0 6px;
+    --glass-tag-font-size: 10.5px;
+  }
+
+  .filter-actions {
+    grid-template-columns: 1fr;
   }
 }
 </style>

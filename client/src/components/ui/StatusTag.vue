@@ -63,10 +63,10 @@ const statusClass = computed(() => `status-tag--${props.status || "unknown"}`);
 }
 
 .status-tag--recruiting {
-  --tag-color: #55e3b4;
-  --tag-bg-top: rgba(29, 95, 77, 0.4);
-  --tag-bg-bottom: rgba(20, 70, 58, 0.38);
-  --tag-border: rgba(88, 215, 172, 0.44);
+  --tag-color: #d3b3ff;
+  --tag-bg-top: rgba(88, 62, 138, 0.42);
+  --tag-bg-bottom: rgba(63, 42, 105, 0.38);
+  --tag-border: rgba(196, 157, 255, 0.48);
 }
 
 .status-tag--in_progress {

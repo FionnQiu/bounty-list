@@ -311,19 +311,22 @@ const actions = computed(() => (props.type === "published" ? publishedActions.va
 }
 
 .workbench-card__actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-2);
+}
+
+.workbench-card__actions button {
+  width: 100%;
+}
+
+.workbench-card__actions button:only-child {
+  grid-column: 1 / -1;
 }
 
 @media (max-width: 768px) {
   .workbench-card__meta {
     flex-wrap: wrap;
-  }
-
-  .workbench-card__actions {
-    display: grid;
-    grid-template-columns: 1fr;
   }
 }
 

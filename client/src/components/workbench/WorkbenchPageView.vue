@@ -128,7 +128,7 @@ export default {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
   gap: var(--space-4);
-  height: calc(100dvh - var(--top-dock-height) - var(--page-padding) - var(--page-padding));
+  height: 100%;
   min-height: 0;
   overflow: hidden;
 }
@@ -162,6 +162,8 @@ export default {
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: var(--space-1);
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .workbench-grid {
@@ -178,11 +180,6 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .workbench-page {
-    height: auto;
-    min-height: calc(100dvh - var(--top-dock-height) - var(--page-padding) - var(--page-padding));
-  }
-
   .workbench-grid {
     grid-template-columns: 1fr;
   }

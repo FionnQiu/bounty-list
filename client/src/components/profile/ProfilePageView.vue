@@ -921,24 +921,26 @@ export default {
   }
 
   .hero-contact,
-  .hero-stats,
   .overview-stats,
   .edit-grid {
     grid-template-columns: 1fr;
   }
 
+  .hero-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .hero-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     justify-content: stretch;
   }
 
   .hero-actions .primary-button,
-  .hero-actions .btn,
-  .edit-actions .primary-button,
-  .edit-actions .btn {
+  .hero-actions .btn {
     width: 100%;
   }
 
-  .hero-actions,
   .edit-actions {
     flex-direction: column;
   }
