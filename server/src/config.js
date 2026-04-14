@@ -2,9 +2,22 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+function parseCsvList(value) {
+  if (!value) {
+    return [];
+  }
+
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 export const config = {
+  host: process.env.HOST || '127.0.0.1',
   port: Number(process.env.PORT || 3000),
   jwtSecret: process.env.JWT_SECRET || 'change-this-secret',
+  corsOrigins: parseCsvList(process.env.CORS_ORIGIN),
   db: {
     host: process.env.DB_HOST || '127.0.0.1',
     port: Number(process.env.DB_PORT || 3306),

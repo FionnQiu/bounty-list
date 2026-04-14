@@ -1,7 +1,8 @@
-﻿import cors from "cors";
+import cors from "cors";
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { config } from "./config.js";
 import authRoutes from "./routes/auth.js";
 import bountyRoutes from "./routes/bounties.js";
 import conversationRoutes from "./routes/conversations.js";
@@ -12,8 +13,18 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadsDir = path.resolve(__dirname, "../uploads");
+const corsOptions = config.corsOrigins.length
+  ? {
+      origin(origin, callback) {
+        callback(null, !origin || config.corsOrigins.includes(origin));
+      },
+    }
+  : undefined;
 
-app.use(cors());
+app.disable("x-powered-by");
+app.set("trust proxy", true);
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "8mb" }));
 app.use("/uploads", express.static(uploadsDir));
 app.use("/api", (_, res, next) => {

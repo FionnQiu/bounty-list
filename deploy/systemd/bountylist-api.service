@@ -1,0 +1,18 @@
+[Unit]
+Description=BountyList API
+After=network-online.target mysql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bountylist
+Group=bountylist
+WorkingDirectory=/srv/bountylist/server
+Environment=NODE_ENV=production
+EnvironmentFile=/srv/bountylist/server/.env
+ExecStart=/usr/bin/node src/index.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
